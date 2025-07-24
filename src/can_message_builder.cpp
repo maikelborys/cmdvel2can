@@ -64,8 +64,10 @@ can_frame CANMessageBuilder::buildRPMCommand(uint8_t vesc_id, double rpm) {
 }
 
 double CANMessageBuilder::velocityToDutyCycle(double velocity, double max_velocity) {
+    // Empirical calibration (2025): duty_cycle = velocity_mps / 7.857
+    // See DESIGN_AND_API.md for details
     if (max_velocity <= 0.0) return 0.0;
-    return std::clamp(velocity / max_velocity, -1.0, 1.0);
+    return std::clamp(velocity / 7.857, -1.0, 1.0);
 }
 
 double CANMessageBuilder::dutyCycleToVelocity(double duty_cycle, double max_velocity) {
@@ -85,22 +87,19 @@ bool CANMessageBuilder::isValidDutyCycle(double duty_cycle) {
 }
 
 can_frame CANMessageBuilder::buildVescCommand(uint8_t vesc_id, CommandType command_type, int32_t value) {
+    (void)command_type; // Suppress unused parameter warning
     can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
-    
     // Set CAN ID based on VESC ID
     // Format: 0x000000XX where XX is the VESC ID
     frame.can_id = static_cast<uint32_t>(vesc_id);
-    
     // Set data length
     frame.can_dlc = 4;  // 4 bytes for duty cycle command
-    
     // Pack 32-bit value in big-endian format (verified from hardware)
     frame.data[0] = (value >> 24) & 0xFF;  // Most significant byte
     frame.data[1] = (value >> 16) & 0xFF;
     frame.data[2] = (value >> 8) & 0xFF;
     frame.data[3] = value & 0xFF;          // Least significant byte
-    
     return frame;
 }
 

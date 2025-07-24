@@ -87,6 +87,7 @@ Bridge ROS2 `/cmd_vel` messages to VESC motor controllers via CAN, enabling safe
 
 - [ ] Implement safety system (`cmd_vel_real` monitoring)
 - [ ] Implement behavior system (velocity ramping)
+    - Next step: Add incremental velocity adjustment (ramp) logic to the main bridge node. Compare current and commanded velocity, and limit the rate of change according to a configurable ramp rate parameter. Document ramping logic and test with real hardware.
 - [ ] Add launch files and parameter YAMLs
 - [ ] Add more diagnostics and error recovery
 - [ ] Document closed-loop control options

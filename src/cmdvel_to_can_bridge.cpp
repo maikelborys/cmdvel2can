@@ -93,9 +93,10 @@ void CmdVelToCANNode::sendCanMessage(double left_wheel_velocity, double right_wh
     left_wheel_msg.id = 0x1C | CAN_EFF_FLAG;  // 28 | extended
     right_wheel_msg.id = 0x2E | CAN_EFF_FLAG; // 46 | extended
 
-    // Map velocity to duty cycle, clamp to ±0.10 (±10%)
-    double left_duty = std::clamp(left_wheel_velocity / 2.0, -0.10, 0.10);
-    double right_duty = std::clamp(right_wheel_velocity / 2.0, -0.10, 0.10);
+    // Map velocity to duty cycle using empirical calibration (2025): duty_cycle = velocity_mps / 7.857
+    // See DESIGN_AND_API.md for details
+    double left_duty = std::clamp(left_wheel_velocity / 7.857, -1.0, 1.0);
+    double right_duty = std::clamp(right_wheel_velocity / 7.857, -1.0, 1.0);
 
     int32_t left_val = static_cast<int32_t>(left_duty * 100000.0);
     int32_t right_val = static_cast<int32_t>(right_duty * 100000.0);

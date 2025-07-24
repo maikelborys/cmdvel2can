@@ -1,3 +1,23 @@
+## Velocity to Duty Cycle Formula (2025 empirical calibration)
+
+To convert a desired wheel velocity (in m/s) to duty cycle:
+
+    duty_cycle = (velocity_mps / 0.0081) / (ticks_per_sec_per_duty)
+
+Where:
+- velocity_mps: desired wheel velocity in meters per second
+- 0.0081: distance per tick in meters (8.1 mm)
+- ticks_per_sec_per_duty: empirically measured (from sweep, ~970 for your robot)
+
+For your robot:
+
+    duty_cycle = velocity_mps / (0.0081 * 970)
+    duty_cycle ≈ velocity_mps / 7.857
+
+Example: For 1.117 m/s (1 wheel revolution/sec):
+    duty_cycle = 1.117 / 7.857 ≈ 0.142
+
+**Always use this formula to convert velocity to duty cycle in your code and documentation.**
 # VESC CAN Protocol Documentation
 
 ## Hardware Testing Results

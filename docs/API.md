@@ -1,3 +1,14 @@
+## Velocity to Duty Cycle Conversion (2025 empirical calibration)
+
+To convert a desired wheel velocity (in m/s) to duty cycle:
+
+    duty_cycle = velocity_mps / 7.857
+
+Where:
+- velocity_mps: desired wheel velocity in meters per second
+- 7.857: empirical constant (0.0081 m/tick × 970 ticks/sec/duty)
+
+**Use this formula whenever converting cmdvel (velocity) to duty cycle in your code.**
 # ROS2 VESC CAN Bridge - Complete Documentation
 
 ## 🎉 Project Status: WORKING ✅

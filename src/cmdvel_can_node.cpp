@@ -124,8 +124,10 @@ private:
         double right = lin + (ang * sep / 2.0);
         return {left, right};
     }
-    double velocity_to_duty_cycle(double v, double vmax) {
-        return std::clamp(v / vmax, -1.0, 1.0);
+    // Empirical calibration (2025): duty_cycle = velocity_mps / 7.857
+    double velocity_to_duty_cycle(double v, double /*vmax*/) {
+        // See DESIGN_AND_API.md for details
+        return std::clamp(v / 7.857, -1.0, 1.0);
     }
     can_msgs::msg::Frame build_duty_cycle_frame(int vesc_id, double duty) {
         can_msgs::msg::Frame frame;
