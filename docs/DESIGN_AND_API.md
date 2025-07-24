@@ -24,6 +24,16 @@ This project provides a **minimal, single-file ROS2 node** to bridge `/cmd_vel` 
 - **Parameters:**
   - `wheel_separation` (m)
   - `wheel_diameter` (m)
+  - **Odometry Calibration (2025):**
+    - 3 Hall sensors = 6 electrical states per mechanical revolution
+    - 23 poles (mechanical pulses per revolution)
+    - 138 ticks per mechanical revolution (23 × 6)
+    - Wheel diameter: 0.3556m
+    - Wheel circumference: π × 0.3556m = 1.117m
+    - Distance per tick: 1.117m / 138 ≈ 0.008094m (8.1 mm per tick)
+    - VESC STATUS_5 messages report electrical revolutions; divide by 6 for mechanical.
+    - Use 138 as the correct number of ticks per wheel turn for odometry and calibration.
+    - To convert duty cycle to distance/sec: (ticks/sec per duty) × 8.1 mm/tick (see calibration data).
   - `left_vesc_id`, `right_vesc_id` (CAN IDs)
   - `can_interface` (e.g., "can0")
   - `max_velocity`, `max_angular_velocity`

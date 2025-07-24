@@ -1,4 +1,6 @@
 
+
+
 cmake_minimum_required(VERSION 3.8)
 project(cmdvel2can)
 
@@ -17,6 +19,7 @@ find_package(can_msgs REQUIRED)
 
 include_directories(include)
 
+
 # CAN Bridge Node
 add_executable(can_bridge_node src/can_bridge_node.cpp)
 ament_target_dependencies(can_bridge_node rclcpp can_msgs)
@@ -26,6 +29,11 @@ install(TARGETS can_bridge_node DESTINATION lib/${PROJECT_NAME})
 add_executable(cmdvel2can_node src/main.cpp src/cmdvel_to_can_bridge.cpp src/can_interface.cpp src/velocity_converter.cpp src/can_message_builder.cpp src/safety_system.cpp src/velocity_monitor.cpp src/incremental_controller.cpp)
 ament_target_dependencies(cmdvel2can_node rclcpp geometry_msgs std_msgs diagnostic_msgs std_srvs can_msgs)
 install(TARGETS cmdvel2can_node DESTINATION lib/${PROJECT_NAME})
+
+# Interactive /cmd_vel publisher node
+add_executable(cmdvel_pub_node src/cmdvel_pub_node.cpp)
+ament_target_dependencies(cmdvel_pub_node rclcpp geometry_msgs)
+install(TARGETS cmdvel_pub_node DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch

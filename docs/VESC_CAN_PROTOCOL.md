@@ -2,7 +2,32 @@
 
 ## Hardware Testing Results
 
-Based on real hardware testing with the differential drive robot, we have verified the VESC CAN protocol for duty cycle commands.
+
+## VESC CAN Protocol: Ticks, Pulses, and Odometry
+
+### Key Facts (2025 empirical calibration)
+- **3 Hall sensors** = 6 electrical states per mechanical revolution
+- **23 poles** (tachometer pulses per revolution, mechanical)
+- **138 ticks per mechanical revolution** (23 × 6)
+- **Wheel diameter**: 0.3556m
+- **Wheel circumference**: π × 0.3556m = 1.117m
+- **Distance per tick**: 1.117m / 138 ≈ 0.008094m (8.1 mm per tick)
+
+### CAN Protocol and Odometry
+- VESC STATUS_5 messages report the tachometer value as electrical revolutions.
+- The odometry node divides by 6 to get mechanical revolutions.
+- For each mechanical revolution, the wheel moves 1.117m and the tachometer increases by 138 ticks.
+- Use 138 as the correct number of ticks per wheel turn for all odometry and calibration calculations.
+
+### Example Conversion
+- If you observe a change of 69 ticks, the wheel has turned 0.5 revolutions (69/138), which is 0.5585m of travel.
+
+### Duty Cycle to Distance
+- The mapping from duty cycle to ticks/sec is empirical (see calibration CSV).
+- To convert duty cycle to distance/sec: (ticks/sec per duty) × 8.1 mm/tick.
+
+---
+Below: original protocol details remain for reference.
 
 ### Verified Hardware Configuration
 - **Left VESC**: ID 28 (0x1C) → CAN ID `0x0000001C`

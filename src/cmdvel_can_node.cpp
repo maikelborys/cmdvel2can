@@ -38,6 +38,23 @@ public:
             [this](geometry_msgs::msg::Twist::SharedPtr msg) {
                 last_cmd_vel_ = *msg;
                 last_cmdvel_time_ = this->get_clock()->now();
+                /******************TEMPORARY *******************************************
+                every time a new /cmd_vel message arrives, your node will instantly compute and publish CAN frames to the can_tx topic (in addition to the periodic timer-based publishing).
+                This gives you both low-latency response and robust periodic safety updates. The bridge node is still required to actually send frames to the CAN bus.
+             
+                // Immediate CAN publish for low-latency response
+                auto [left_vel, right_vel] = cmdvel_to_wheel_velocities(msg->linear.x, msg->angular.z, wheel_separation_);
+                left_vel = std::clamp(left_vel, -max_velocity_, max_velocity_);
+                right_vel = std::clamp(right_vel, -max_velocity_, max_velocity_);
+                double left_duty = velocity_to_duty_cycle(left_vel, max_velocity_);
+                double right_duty = velocity_to_duty_cycle(right_vel, max_velocity_);
+                can_pub_->publish(build_duty_cycle_frame(left_vesc_id_, left_duty));
+                can_pub_->publish(build_duty_cycle_frame(right_vesc_id_, right_duty));
+                // Optional: debug message
+                std_msgs::msg::String dbg;
+                dbg.data = "[IMMEDIATE] Sent: left_duty=" + std::to_string(left_duty) + ", right_duty=" + std::to_string(right_duty);
+                debug_pub_->publish(dbg);
+                   */
             }
         );
         cmd_vel_real_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(

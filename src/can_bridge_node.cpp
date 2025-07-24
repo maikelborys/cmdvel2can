@@ -48,14 +48,33 @@ private:
         return true;
     }
     void can_tx_callback(const can_msgs::msg::Frame::SharedPtr msg) {
+        /* *********************************************************************************
+        Timestamps and debug output have been added to your bridge node. Now, when a CAN frame is received on can_tx, the timestamp will be logged.
+        */
+        // Timestamp when CAN frame received from ROS2
+        auto t_ros = std::chrono::system_clock::now();
+        auto t_ros_us = std::chrono::time_point_cast<std::chrono::microseconds>(t_ros);
+        auto epoch = t_ros_us.time_since_epoch();
+        double t_ros_sec = epoch.count() / 1e6;
+        RCLCPP_INFO(this->get_logger(), "[BRIDGE] Received can_tx at t=%.6f id=0x%X data=[%d,%d,%d,%d,%d,%d,%d,%d]", t_ros_sec, msg->id, msg->data[0], msg->data[1], msg->data[2], msg->data[3], msg->data[4], msg->data[5], msg->data[6], msg->data[7]);
+
         struct can_frame frame;
         std::memset(&frame, 0, sizeof(frame));
         frame.can_id = msg->id;
         frame.can_dlc = msg->dlc;
         for (int i = 0; i < 8; ++i) frame.data[i] = msg->data[i];
+
+        // Timestamp before write
+        auto t_write = std::chrono::system_clock::now();
+        auto t_write_us = std::chrono::time_point_cast<std::chrono::microseconds>(t_write);
+        auto epoch_write = t_write_us.time_since_epoch();
+        double t_write_sec = epoch_write.count() / 1e6;
+
         int n = write(can_sock_, &frame, sizeof(frame));
         if (n != sizeof(frame)) {
             RCLCPP_ERROR(this->get_logger(), "Failed to send CAN frame (id=0x%X)", frame.can_id);
+        } else {
+            RCLCPP_INFO(this->get_logger(), "[BRIDGE] Wrote CAN frame at t=%.6f id=0x%X", t_write_sec, frame.can_id);
         }
     }
 };

@@ -65,7 +65,17 @@ def generate_launch_description():
 
 ## CAN Protocol Reference
 
-### VESC Duty Cycle Commands
+
+### VESC Duty Cycle, Ticks, and Odometry (2025 empirical calibration)
+- **3 Hall sensors** = 6 electrical states per mechanical revolution
+- **23 poles** (mechanical pulses per revolution)
+- **138 ticks per mechanical revolution** (23 × 6)
+- **Wheel diameter**: 0.3556m
+- **Wheel circumference**: π × 0.3556m = 1.117m
+- **Distance per tick**: 1.117m / 138 ≈ 0.008094m (8.1 mm per tick)
+- VESC STATUS_5 messages report electrical revolutions; divide by 6 for mechanical.
+- Use 138 as the correct number of ticks per wheel turn for odometry and calibration.
+- To convert duty cycle to distance/sec: (ticks/sec per duty) × 8.1 mm/tick (see calibration data).
 
 #### Frame Format
 - **CAN ID**: `0x8000001C` (left), `0x8000002E` (right) 
