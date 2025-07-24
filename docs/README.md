@@ -1,3 +1,60 @@
+## Data Flow: How /cmd_vel is Processed (Detailed)
+
+This section describes, step by step, how a `/cmd_vel` message is processed by the system, referencing the main classes and functions in the code.
+
+### 1. ROS2 Topic Reception
+- The control node (`Cmdvel2CanNode`) subscribes to `/cmd_vel` (type: `geometry_msgs/msg/Twist`).
+- When a message arrives, the callback stores it in `last_cmd_vel_` and updates the timestamp `last_cmdvel_time_`.
+
+### 2. Safety Check
+- The node also subscribes to `/cmd_vel_real` for safety. If this topic is not alive (checked by timestamp), the node will not send CAN commands.
+
+### 3. Control Loop (Timer)
+- A timer runs at `command_frequency` (e.g., 50 Hz).
+- On each tick, the `control_loop()` function is called.
+- Inside `control_loop()`:
+  - Checks if `/cmd_vel_real` is alive (fresh message within `watchdog_timeout`).
+  - If not, logs a warning and skips sending CAN.
+
+### 4. Kinematics Conversion
+- The last received `geometry_msgs/msg/Twist` is converted to left/right wheel velocities using differential drive kinematics:
+  - `left = linear.x - (angular.z * wheel_separation / 2.0)`
+  - `right = linear.x + (angular.z * wheel_separation / 2.0)`
+- Velocities are clamped to `[-max_velocity, max_velocity]`.
+
+### 5. Duty Cycle Mapping
+- Each wheel velocity is mapped to a duty cycle:
+  - `duty = velocity / max_velocity` (clamped to [-1.0, 1.0])
+  - Scaled to VESC format: `int32_t scaled = duty * 100000`
+
+### 6. CAN Frame Construction
+- The function `build_duty_cycle_frame(vesc_id, duty)` packs the duty cycle as a 4-byte big-endian integer in a `can_msgs::msg::Frame`.
+- The CAN ID is set to `(vesc_id | CAN_EFF_FLAG)` for extended frame format.
+
+### 7. CAN Frame Publishing
+- The node publishes the CAN frame to the `can_tx` topic using `can_pub_->publish(...)`.
+- This happens for both left and right VESCs.
+
+### 8. CAN Bridge Node
+- The separate `can_bridge_node` subscribes to `can_tx` and writes the frame to the real CAN bus using SocketCAN.
+
+### 9. VESC Receives Command
+- The VESC receives the CAN frame and applies the duty cycle to the motor.
+
+---
+
+**Key Classes/Functions:**
+- `Cmdvel2CanNode`: Main ROS2 node class
+- `control_loop()`: Main timer-driven processing function
+- `cmdvel_to_wheel_velocities()`: Kinematics conversion
+- `velocity_to_duty_cycle()`: Duty cycle mapping
+- `build_duty_cycle_frame()`: CAN frame construction
+
+**Performance Notes:**
+- The timer frequency (`command_frequency`) controls how often commands are sent (e.g., 50 Hz).
+- For minimal delay, you can also send CAN frames immediately in the `/cmd_vel` callback.
+
+---
 # ROS2 VESC CAN Bridge - Complete Documentation
 
 ## 🎉 Project Status: WORKING! ✅

@@ -26,7 +26,7 @@ public:
         right_vesc_id_ = this->declare_parameter("right_vesc_id", 46);
         max_velocity_ = this->declare_parameter("max_velocity", 2.0);
         max_angular_velocity_ = this->declare_parameter("max_angular_velocity", 3.0);
-        command_frequency_ = this->declare_parameter("command_frequency", 20.0);
+        command_frequency_ = this->declare_parameter("command_frequency", 50.0);
         watchdog_timeout_ = this->declare_parameter("watchdog_timeout", 0.5);
 
         // ROS publishers/subscribers
